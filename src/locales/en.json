@@ -1,0 +1,85 @@
+{
+  "nav": {
+    "features": "Features",
+    "categories": "Categories",
+    "about": "About",
+    "login": "Login",
+    "getStarted": "Get Started"
+  },
+  "hero": {
+    "title": "Your Home,",
+    "titleHighlight": "Our Experts",
+    "subtitle": "Find trusted professionals for your home - interior designers, architects, craftsmen, and home care services.",
+    "findPro": "Find a Pro",
+    "postProject": "Post a Project",
+    "trustedBy": "10,000+ satisfied customers"
+  },
+  "stats": {
+    "professionals": "Professionals",
+    "projects": "Completed Projects",
+    "rating": "Average Rating",
+    "satisfaction": "Satisfied Clients"
+  },
+  "features": {
+    "badge": "Why Us?",
+    "title": "Why Homico?",
+    "subtitle": "We connect homeowners with verified professionals",
+    "verified": {
+      "title": "Verified Professionals",
+      "description": "All professionals go through verification and have ratings from real clients."
+    },
+    "pricing": {
+      "title": "Transparent Pricing",
+      "description": "Get quotes from multiple professionals and compare prices."
+    },
+    "communication": {
+      "title": "Direct Communication",
+      "description": "Connect directly with professionals and discuss project details."
+    },
+    "reviews": {
+      "title": "Ratings & Reviews",
+      "description": "Read real client reviews and choose the best professionals."
+    }
+  },
+  "categories": {
+    "badge": "Services",
+    "title": "Categories",
+    "subtitle": "Find the right professional for your project",
+    "interiorDesign": {
+      "title": "Interior Design",
+      "description": "Professional designers"
+    },
+    "architecture": {
+      "title": "Architecture",
+      "description": "Architects and planning"
+    },
+    "craftsmen": {
+      "title": "Craftsmen",
+      "description": "Electricians, plumbers and more"
+    },
+    "homeCare": {
+      "title": "Home Care",
+      "description": "Cleaning, gardening and more"
+    }
+  },
+  "cta": {
+    "title": "Ready to Get Started?",
+    "subtitle": "Join thousands of satisfied users and find the best professionals for your home.",
+    "button": "Sign Up for Free"
+  },
+  "footer": {
+    "description": "Your home, our experts. The best professionals on one platform.",
+    "platform": "Platform",
+    "findPros": "Find Professionals",
+    "postProject": "Post a Project",
+    "becomePro": "Become a Pro",
+    "company": "Company",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "blog": "Blog",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "rights": "All rights reserved"
+  }
+}
