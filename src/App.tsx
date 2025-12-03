@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Helmet } from 'react-helmet-async'
 
 // Configuration - Update these URLs for your deployment
-const APP_URL = 'https://app.homico.ge'
+const APP_URL = 'http://159.203.106.183'
 
 type Lang = 'ka' | 'en'
 
