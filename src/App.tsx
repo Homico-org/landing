@@ -663,9 +663,9 @@ export default function App() {
                 </div>
 
                 {/* Title */}
-                <h1 className={`text-[1.65rem] leading-[1.25] xs:text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold mb-6 md:mb-8 tracking-tight transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <h1 className={`text-[1.5rem] leading-[1.25] xs:text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold mb-6 md:mb-8 tracking-tight transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                   <span className="block text-[var(--color-text-primary)]">{t.hero.title}</span>
-                  <span className="block mt-1 md:mt-2 gradient-text">
+                  <span className="block mt-1 md:mt-2 gradient-text text-[1.35rem] xs:text-[1.6rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
                     {t.hero.titleHighlight}
                   </span>
                 </h1>
