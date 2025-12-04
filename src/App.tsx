@@ -1,8 +1,343 @@
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 
-// Configuration - Update these URLs for your deployment
-const APP_URL = 'http://159.203.106.183'
+// Configuration - Use environment variable or fallback to current origin for local development
+const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+
+// Home/Renovation themed SVG Icons
+const HouseIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+    <polyline points="9,22 9,12 15,12 15,22" />
+  </svg>
+)
+
+const ApartmentIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <path d="M9 6h.01M15 6h.01M9 10h.01M15 10h.01M9 14h.01M15 14h.01M9 18h.01M15 18h.01" />
+  </svg>
+)
+
+const HammerIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 12l-8.5 8.5a2.12 2.12 0 01-3-3L12 9" />
+    <path d="M17.64 15L22 10.64a1 1 0 00-1.41-1.41l-4.24 4.24" />
+    <path d="M9 3l6 6-3 3-6-6z" />
+    <path d="M3 9l6 6" />
+  </svg>
+)
+
+const WrenchIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" />
+  </svg>
+)
+
+const PaintBrushIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18.37 2.63L14 7l-1.59-1.59a2 2 0 00-2.82 0L8 7l9 9 1.59-1.59a2 2 0 000-2.82L17 10l4.37-4.37a2.12 2.12 0 10-3-3z" />
+    <path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7" />
+  </svg>
+)
+
+const RulerIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 2l6 6-14 14-6-6z" />
+    <path d="M10 8l2 2M6 12l2 2M14 4l2 2" />
+  </svg>
+)
+
+const WindowIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="12" y1="3" x2="12" y2="21" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+  </svg>
+)
+
+const DoorIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 2h14a1 1 0 011 1v18a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" />
+    <path d="M12 2v20" />
+    <circle cx="15.5" cy="12" r="0.5" fill="currentColor" />
+  </svg>
+)
+
+const BrickIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="6" rx="1" />
+    <rect x="2" y="14" width="20" height="6" rx="1" />
+    <line x1="12" y1="4" x2="12" y2="10" />
+    <line x1="7" y1="14" x2="7" y2="20" />
+    <line x1="17" y1="14" x2="17" y2="20" />
+  </svg>
+)
+
+const LightBulbIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 18h6M10 22h4M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0018 8 6 6 0 006 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 018.91 14" />
+  </svg>
+)
+
+const KeyIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+  </svg>
+)
+
+const FloorPlanIcon = ({ size = 48 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <path d="M3 9h18M9 21V9M15 21v-6M15 15h6" />
+  </svg>
+)
+
+// 3D Parallax Objects Component - Home/Renovation Theme
+function Parallax3DObjects() {
+  const [scrollY, setScrollY] = useState(0)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY)
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2
+      })
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [])
+
+  // Calculate parallax transforms
+  const getTransform = (speed: number, mouseInfluence: number = 10) => {
+    const y = scrollY * speed
+    const rotateX = mousePos.y * mouseInfluence
+    const rotateY = mousePos.x * mouseInfluence
+    return `translateY(${y}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+  }
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden perspective-container" style={{ zIndex: 1 }}>
+
+      {/* === HERO SECTION === */}
+
+      {/* House - Top Right */}
+      <div
+        className="floating-object hidden md:block animate-float-gentle"
+        style={{ top: '12%', right: '8%', transform: getTransform(-0.25) }}
+      >
+        <div className="icon-3d">
+          <div className="icon-glass" />
+          <HouseIcon size={56} />
+        </div>
+      </div>
+
+      {/* Wrench - Top Left */}
+      <div
+        className="floating-object hidden md:block animate-float-slow"
+        style={{ top: '18%', left: '6%', transform: getTransform(-0.2, 8), animationDelay: '-2s' }}
+      >
+        <div className="icon-3d forest">
+          <div className="icon-glass" />
+          <WrenchIcon size={48} />
+        </div>
+      </div>
+
+      {/* Paint Brush - Left Side */}
+      <div
+        className="floating-object hidden lg:block animate-float-reverse"
+        style={{ top: '35%', left: '4%', transform: getTransform(-0.15, 12) }}
+      >
+        <div className="icon-3d">
+          <PaintBrushIcon size={42} />
+        </div>
+      </div>
+
+      {/* Apartment Building - Right Side */}
+      <div
+        className="floating-object hidden md:block animate-float-slow"
+        style={{ top: '48%', right: '5%', transform: getTransform(-0.18), animationDelay: '-3s' }}
+      >
+        <div className="icon-3d forest">
+          <div className="icon-glass" />
+          <ApartmentIcon size={52} />
+        </div>
+      </div>
+
+      {/* Decorative line */}
+      <div
+        className="floating-object hidden md:block"
+        style={{ top: '28%', left: '18%', transform: `${getTransform(-0.3)} rotate(25deg)` }}
+      >
+        <div className="deco-line" style={{ width: '60px' }} />
+      </div>
+
+      {/* Floating dots - Hero */}
+      <div
+        className="floating-object hidden lg:block animate-pulse-soft"
+        style={{ top: '22%', right: '22%', transform: getTransform(-0.35) }}
+      >
+        <div className="floating-dot large" />
+      </div>
+      <div
+        className="floating-object hidden lg:block animate-pulse-soft"
+        style={{ top: '38%', left: '15%', transform: getTransform(-0.28), animationDelay: '-1s' }}
+      >
+        <div className="floating-dot forest" />
+      </div>
+
+      {/* === STATS SECTION === */}
+
+      {/* Hammer - Stats area */}
+      <div
+        className="floating-object hidden md:block animate-float-gentle"
+        style={{ top: '72%', right: '12%', transform: getTransform(-0.12, 8), animationDelay: '-1.5s' }}
+      >
+        <div className="icon-3d">
+          <div className="icon-glass" />
+          <HammerIcon size={50} />
+        </div>
+      </div>
+
+      {/* Key - Stats left */}
+      <div
+        className="floating-object hidden lg:block animate-sway"
+        style={{ top: '78%', left: '8%', transform: getTransform(-0.1) }}
+      >
+        <div className="icon-3d forest">
+          <KeyIcon size={40} />
+        </div>
+      </div>
+
+      {/* Decorative line */}
+      <div
+        className="floating-object hidden md:block"
+        style={{ top: '68%', right: '28%', transform: `${getTransform(-0.2)} rotate(-15deg)` }}
+      >
+        <div className="deco-line forest" style={{ width: '50px' }} />
+      </div>
+
+      {/* === FEATURES SECTION === */}
+
+      {/* Window - Features left */}
+      <div
+        className="floating-object hidden lg:block animate-float-slow"
+        style={{ top: '105%', left: '5%', transform: getTransform(-0.08, 6), animationDelay: '-2s' }}
+      >
+        <div className="icon-3d">
+          <div className="icon-glass" />
+          <WindowIcon size={46} />
+        </div>
+      </div>
+
+      {/* Ruler - Features right */}
+      <div
+        className="floating-object hidden md:block animate-float-reverse"
+        style={{ top: '115%', right: '6%', transform: getTransform(-0.1, 8) }}
+      >
+        <div className="icon-3d forest">
+          <RulerIcon size={44} />
+        </div>
+      </div>
+
+      {/* Floor Plan - Features center-right */}
+      <div
+        className="floating-object hidden lg:block animate-float-gentle"
+        style={{ top: '125%', right: '18%', transform: getTransform(-0.06), animationDelay: '-1s' }}
+      >
+        <div className="icon-3d">
+          <FloorPlanIcon size={48} />
+        </div>
+      </div>
+
+      {/* Bricks - Features left */}
+      <div
+        className="floating-object hidden lg:block animate-sway"
+        style={{ top: '135%', left: '10%', transform: getTransform(-0.05), animationDelay: '-0.5s' }}
+      >
+        <div className="icon-3d forest">
+          <BrickIcon size={42} />
+        </div>
+      </div>
+
+      {/* Door - Lower area */}
+      <div
+        className="floating-object hidden md:block animate-float-slow"
+        style={{ top: '145%', right: '10%', transform: getTransform(-0.04, 5), animationDelay: '-2.5s' }}
+      >
+        <div className="icon-3d">
+          <DoorIcon size={44} />
+        </div>
+      </div>
+
+      {/* Light Bulb - CTA area */}
+      <div
+        className="floating-object hidden lg:block animate-pulse-soft"
+        style={{ top: '160%', left: '6%', transform: getTransform(-0.03) }}
+      >
+        <div className="icon-3d">
+          <div className="icon-glass" />
+          <LightBulbIcon size={50} />
+        </div>
+      </div>
+
+      {/* Floating dots - Features */}
+      <div
+        className="floating-object hidden lg:block animate-pulse-soft"
+        style={{ top: '110%', left: '20%', transform: getTransform(-0.12), animationDelay: '-2s' }}
+      >
+        <div className="floating-dot" />
+      </div>
+      <div
+        className="floating-object hidden lg:block animate-pulse-soft"
+        style={{ top: '130%', right: '25%', transform: getTransform(-0.08), animationDelay: '-1.5s' }}
+      >
+        <div className="floating-dot forest small" />
+      </div>
+
+      {/* === MOBILE OBJECTS (smaller, fewer) === */}
+
+      {/* House - Mobile */}
+      <div
+        className="floating-object md:hidden animate-float-gentle"
+        style={{ top: '8%', right: '4%', transform: getTransform(-0.2, 5) }}
+      >
+        <div className="icon-3d">
+          <HouseIcon size={36} />
+        </div>
+      </div>
+
+      {/* Wrench - Mobile */}
+      <div
+        className="floating-object md:hidden animate-float-slow"
+        style={{ top: '45%', left: '3%', transform: getTransform(-0.15, 5), animationDelay: '-1s' }}
+      >
+        <div className="icon-3d forest">
+          <WrenchIcon size={32} />
+        </div>
+      </div>
+
+      {/* Hammer - Mobile */}
+      <div
+        className="floating-object md:hidden animate-float-reverse"
+        style={{ top: '75%', right: '5%', transform: getTransform(-0.1, 5) }}
+      >
+        <div className="icon-3d">
+          <HammerIcon size={34} />
+        </div>
+      </div>
+
+    </div>
+  )
+}
 
 type Lang = 'ka' | 'en'
 
@@ -10,59 +345,65 @@ const translations = {
   ka: {
     nav: { login: 'შესვლა', register: 'რეგისტრაცია', menu: 'მენიუ' },
     hero: {
-      title: 'სახლი შენია,',
-      titleHighlight: 'ოსტატი ჩვენი',
-      subtitle: 'იპოვე საუკეთესო პროფესიონალები შენი სახლისთვის - ინტერიერის დიზაინერები, არქიტექტორები, ხელოსნები და სახლის მოვლის სერვისები.',
-      findPro: 'მოძებნე პროფესიონალი',
+      badge: 'საქართველოს #1 სახლის სერვისების პლატფორმა',
+      title: 'შენი სახლი',
+      titleHighlight: 'იმსახურებს საუკეთესოს',
+      subtitle: 'იპოვე გადამოწმებული პროფესიონალები შენი სახლისთვის — ინტერიერის დიზაინერები, არქიტექტორები, ხელოსნები და სახლის მოვლის ექსპერტები.',
+      findPro: 'მოძებნე ოსტატი',
       becomePro: 'გახდი პროფესიონალი',
     },
-    stats: { professionals: 'პროფესიონალი', projects: 'დასრულებული პროექტი', rating: 'საშუალო რეიტინგი', satisfaction: 'კმაყოფილი კლიენტი' },
+    stats: { professionals: 'პროფესიონალი', projects: 'პროექტი', rating: 'რეიტინგი', satisfaction: 'კმაყოფილება' },
     features: {
-      title: 'რატომ Homico?',
-      subtitle: 'ჩვენ ვაკავშირებთ სახლის მფლობელებს გადამოწმებულ პროფესიონალებთან',
-      secure: { title: 'უსაფრთხო გარიგებები', description: 'ყველა გადახდა დაცულია და გარანტირებული.' },
-      quality: { title: 'ხარისხის გარანტია', description: 'მხოლოდ გადამოწმებული პროფესიონალები.' },
-      fast: { title: 'სწრაფი პასუხი', description: 'მიიღეთ შეთავაზებები წუთებში.' },
-      communication: { title: 'პირდაპირი კომუნიკაცია', description: 'დაუკავშირდით პროფესიონალებს პირდაპირ.' },
+      title: 'რატომ ირჩევენ Homico-ს?',
+      subtitle: 'ჩვენ ვაკავშირებთ სახლის მფლობელებს საუკეთესო პროფესიონალებთან',
+      secure: { title: 'უსაფრთხო გადახდები', description: 'თქვენი თანხა დაცულია სამუშაოს დასრულებამდე.' },
+      quality: { title: 'გადამოწმებული ოსტატები', description: 'ყველა პროფესიონალი გადის ვერიფიკაციას.' },
+      fast: { title: 'სწრაფი შედეგი', description: 'მიიღეთ შეთავაზებები რამდენიმე წუთში.' },
+      communication: { title: 'პირდაპირი კონტაქტი', description: 'დაუკავშირდით ოსტატებს პირდაპირ.' },
     },
-    cta: { title: 'მზად ხარ დასაწყებად?', subtitle: 'შემოგვიერთდი ათასობით კმაყოფილ მომხმარებელს' },
+    cta: { title: 'მზად ხარ დასაწყებად?', subtitle: 'შემოგვიერთდი ათასობით კმაყოფილ მომხმარებელს და იპოვე შენი ოსტატი დღესვე' },
     footer: { rights: 'ყველა უფლება დაცულია' },
   },
   en: {
-    nav: { login: 'Login', register: 'Register', menu: 'Menu' },
+    nav: { login: 'Login', register: 'Get Started', menu: 'Menu' },
     hero: {
-      title: 'Your Home,',
-      titleHighlight: 'Our Experts',
-      subtitle: 'Find trusted professionals for your home - interior designers, architects, craftsmen, and home care services.',
+      badge: "Georgia's #1 Home Services Platform",
+      title: 'Your home',
+      titleHighlight: 'deserves the best',
+      subtitle: 'Find verified professionals for your home — interior designers, architects, craftsmen, and home care experts.',
       findPro: 'Find a Pro',
       becomePro: 'Become a Pro',
     },
-    stats: { professionals: 'Professionals', projects: 'Completed Projects', rating: 'Average Rating', satisfaction: 'Satisfied Clients' },
+    stats: { professionals: 'Professionals', projects: 'Projects', rating: 'Rating', satisfaction: 'Satisfaction' },
     features: {
-      title: 'Why Homico?',
-      subtitle: 'We connect homeowners with verified professionals',
-      secure: { title: 'Secure Transactions', description: 'All payments are protected and guaranteed.' },
-      quality: { title: 'Quality Guarantee', description: 'Only verified professionals.' },
-      fast: { title: 'Fast Response', description: 'Get offers in minutes.' },
-      communication: { title: 'Direct Communication', description: 'Connect with professionals directly.' },
+      title: 'Why choose Homico?',
+      subtitle: 'We connect homeowners with the best professionals',
+      secure: { title: 'Secure Payments', description: 'Your money is protected until the job is complete.' },
+      quality: { title: 'Verified Pros', description: 'Every professional goes through verification.' },
+      fast: { title: 'Fast Results', description: 'Get offers within minutes.' },
+      communication: { title: 'Direct Contact', description: 'Connect with pros directly.' },
     },
-    cta: { title: 'Ready to Get Started?', subtitle: 'Join thousands of satisfied customers' },
+    cta: { title: 'Ready to get started?', subtitle: 'Join thousands of happy customers and find your pro today' },
     footer: { rights: 'All rights reserved' },
   },
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>('ka')
+  const [lang] = useState<Lang>('ka')
   const [isLoaded, setIsLoaded] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = translations[lang]
+
+  // Set dark mode by default
+  useEffect(() => {
+    document.documentElement.classList.add('dark')
+  }, [])
 
   useEffect(() => {
     setIsLoaded(true)
     document.documentElement.lang = lang
   }, [lang])
 
-  // Close mobile menu on resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) setMobileMenuOpen(false)
@@ -71,7 +412,6 @@ export default function App() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden'
@@ -85,56 +425,47 @@ export default function App() {
     <>
       <Helmet>
         <html lang={lang} />
-        <title>{lang === 'ka' ? 'Homico - სახლი შენია, ოსტატი ჩვენი' : 'Homico - Your Home, Our Experts'}</title>
+        <title>{lang === 'ka' ? 'Homico - შენი სახლი იმსახურებს საუკეთესოს' : 'Homico - Your Home Deserves the Best'}</title>
         <meta name="description" content={t.hero.subtitle} />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </Helmet>
 
-      <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
-        {/* Animated Background - Optimized for mobile */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-32 -left-32 w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-emerald-500/10 rounded-full blur-[80px] md:blur-[120px] animate-pulse" />
-          <div className="absolute -bottom-32 -right-32 w-[250px] h-[250px] md:w-[500px] md:h-[500px] bg-teal-500/10 rounded-full blur-[60px] md:blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[800px] md:h-[800px] bg-emerald-600/5 rounded-full blur-[100px] md:blur-[150px]" />
+      <div className="min-h-screen bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] overflow-x-hidden relative transition-colors duration-300">
+        {/* Subtle grain texture */}
+        <div className="fixed inset-0 pointer-events-none grain" />
+
+        {/* Decorative gradient shapes */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+          <div className="absolute -top-40 -right-40 w-[500px] h-[500px] md:w-[700px] md:h-[700px] rounded-full blur-3xl animate-float" style={{ backgroundColor: 'var(--blob-1)' }} />
+          <div className="absolute top-1/3 -left-40 w-[400px] h-[400px] md:w-[600px] md:h-[600px] rounded-full blur-3xl animate-float-delayed" style={{ backgroundColor: 'var(--blob-2)' }} />
+          <div className="absolute -bottom-40 right-1/4 w-[500px] h-[500px] rounded-full blur-3xl" style={{ backgroundColor: 'var(--blob-3)' }} />
         </div>
 
-        {/* Header - Mobile Optimized */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-xl border-b border-white/5">
-          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 md:h-20">
+        {/* 3D Parallax Objects */}
+        <Parallax3DObjects />
+
+        {/* Header */}
+        <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b transition-colors duration-300" style={{ backgroundColor: 'var(--header-bg)', borderColor: 'var(--color-border)' }}>
+          <nav className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <a href="/" className="text-xl md:text-2xl font-display font-bold text-white tracking-tight z-50">
-              Homico
-              <span className="inline-block w-1.5 h-1.5 md:w-2 md:h-2 bg-emerald-400 rounded-full ml-1 animate-pulse" />
+            <a href="/" className="flex items-center gap-2 z-50">
+              <span className="text-xl md:text-2xl font-serif font-semibold text-[var(--color-text-primary)] tracking-tight">
+                Homico
+              </span>
+              <span className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-primary-400"></span>
             </a>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-4">
-              {/* Language Switcher */}
-              <div className="flex gap-1 bg-white/5 rounded-full p-1 border border-white/10">
-                <button
-                  onClick={() => setLang('ka')}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${lang === 'ka' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' : 'text-gray-400 hover:text-white'}`}
-                >
-                  GE
-                </button>
-                <button
-                  onClick={() => setLang('en')}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 ${lang === 'en' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' : 'text-gray-400 hover:text-white'}`}
-                >
-                  EN
-                </button>
-              </div>
-
-              {/* Login/Register */}
+            <div className="hidden md:flex items-center gap-3">
               <a
                 href={`${APP_URL}/login`}
-                className="px-5 py-2.5 text-gray-300 hover:text-white font-medium transition-colors duration-200"
+                className="px-5 py-2.5 font-medium transition-colors duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
               >
                 {t.nav.login}
               </a>
               <a
                 href={`${APP_URL}/register`}
-                className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-0.5"
+                className="btn-primary px-6 py-2.5 rounded-xl"
               >
                 {t.nav.register}
               </a>
@@ -143,175 +474,224 @@ export default function App() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden relative z-50 w-10 h-10 flex items-center justify-center"
+              className="md:hidden relative z-50 w-12 h-12 flex items-center justify-center rounded-xl transition-all duration-300"
+              style={{
+                backgroundColor: mobileMenuOpen ? 'var(--color-bg-elevated)' : 'transparent',
+                border: mobileMenuOpen ? '1px solid var(--color-border)' : '1px solid transparent'
+              }}
               aria-label={t.nav.menu}
             >
-              <div className="w-6 h-5 relative flex flex-col justify-between">
-                <span className={`w-full h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-                <span className={`w-full h-0.5 bg-white rounded-full transition-all duration-300 ${mobileMenuOpen ? 'opacity-0 scale-0' : ''}`} />
-                <span className={`w-full h-0.5 bg-white rounded-full transition-all duration-300 origin-center ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              <div className="w-5 h-4 relative flex flex-col justify-between">
+                <span
+                  className={`w-full h-[2px] rounded-full transition-all duration-300 ease-out origin-center ${mobileMenuOpen ? 'rotate-45 translate-y-[7px]' : ''}`}
+                  style={{ backgroundColor: mobileMenuOpen ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
+                />
+                <span
+                  className={`w-full h-[2px] rounded-full transition-all duration-200 ${mobileMenuOpen ? 'opacity-0 scale-x-0' : ''}`}
+                  style={{ backgroundColor: 'var(--color-text-primary)' }}
+                />
+                <span
+                  className={`w-full h-[2px] rounded-full transition-all duration-300 ease-out origin-center ${mobileMenuOpen ? '-rotate-45 -translate-y-[7px]' : ''}`}
+                  style={{ backgroundColor: mobileMenuOpen ? 'var(--color-accent)' : 'var(--color-text-primary)' }}
+                />
               </div>
             </button>
           </nav>
 
           {/* Mobile Menu Overlay */}
           <div
-            className={`md:hidden fixed inset-0 bg-[#0a0a0f]/98 backdrop-blur-xl transition-all duration-500 ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-            style={{ top: '64px' }}
+            className={`md:hidden fixed inset-x-0 bottom-0 transition-all duration-400 ease-out ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+            style={{
+              top: '64px',
+              backgroundColor: 'var(--color-bg-primary)',
+            }}
           >
-            <div className={`flex flex-col items-center justify-center h-full px-6 pb-20 transition-all duration-500 ${mobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'}`}>
-              {/* Language Switcher */}
-              <div className="flex gap-2 bg-white/5 rounded-full p-1.5 border border-white/10 mb-10">
-                <button
-                  onClick={() => setLang('ka')}
-                  className={`px-5 py-2.5 rounded-full text-base font-medium transition-all duration-300 ${lang === 'ka' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' : 'text-gray-400'}`}
-                >
-                  GE
-                </button>
-                <button
-                  onClick={() => setLang('en')}
-                  className={`px-5 py-2.5 rounded-full text-base font-medium transition-all duration-300 ${lang === 'en' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' : 'text-gray-400'}`}
-                >
-                  EN
-                </button>
-              </div>
-
-              {/* Mobile Menu Links */}
-              <div className="flex flex-col items-center gap-4 w-full max-w-xs">
-                <a
-                  href={`${APP_URL}/login`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-lg text-gray-300 hover:text-white font-medium transition-colors duration-200 border border-white/10 rounded-2xl bg-white/5"
-                >
-                  {t.nav.login}
-                </a>
-                <a
-                  href={`${APP_URL}/register`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/25"
-                >
-                  {t.nav.register}
-                </a>
+            <div className="h-full flex flex-col px-5 pt-6 pb-8">
+              {/* Card container with background */}
+              <div
+                className={`rounded-2xl p-6 transition-all duration-400 ease-out ${mobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'}`}
+                style={{
+                  backgroundColor: 'var(--color-bg-elevated)',
+                  border: '1px solid var(--color-border)',
+                  boxShadow: 'var(--shadow-lg)'
+                }}
+              >
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3">
+                  <a
+                    href={`${APP_URL}/register`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="btn-primary w-full py-3.5 text-center text-base"
+                  >
+                    {t.nav.register}
+                  </a>
+                  <a
+                    href={`${APP_URL}/login`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="btn-secondary w-full py-3.5 text-center text-base"
+                  >
+                    {t.nav.login}
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </header>
 
         <main>
-          {/* Hero Section - Mobile Optimized */}
+          {/* Hero Section */}
           <section className="relative min-h-[100svh] flex items-center justify-center pt-16 md:pt-20">
-            <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-12 md:py-20 relative z-10">
-              <div className="max-w-4xl mx-auto text-center">
-                {/* Animated Title */}
-                <h1 className={`text-[2.5rem] leading-[1.1] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-display font-bold mb-6 md:mb-8 tracking-tight transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                  <span className="block text-white">{t.hero.title}</span>
-                  <span className="block mt-1 md:mt-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+            <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 py-12 md:py-20 relative z-10">
+              <div className="max-w-3xl mx-auto text-center">
+                {/* Badge */}
+                <div className={`badge badge-accent mb-8 transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" />
+                  <span>{t.hero.badge}</span>
+                </div>
+
+                {/* Title */}
+                <h1 className={`text-[2.75rem] leading-[1.1] sm:text-5xl md:text-6xl lg:text-7xl font-semibold mb-6 md:mb-8 tracking-tight transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  <span className="block text-[var(--color-text-primary)]">{t.hero.title}</span>
+                  <span className="block mt-1 md:mt-2 gradient-text">
                     {t.hero.titleHighlight}
                   </span>
                 </h1>
 
-                <p className={`text-base sm:text-lg md:text-xl text-gray-400 mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed px-2 transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <p className={`text-base sm:text-lg md:text-xl mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed transition-all duration-1000 delay-200 text-[var(--color-text-secondary)] ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                   {t.hero.subtitle}
                 </p>
 
-                {/* CTA Buttons - Stack on mobile */}
-                <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0 transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                {/* CTA Buttons */}
+                <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                   <a
                     href={`${APP_URL}/browse`}
-                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-full transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98] touch-manipulation"
+                    className="group btn-primary inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4"
                   >
                     <span>{t.hero.findPro}</span>
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </a>
                   <a
                     href={`${APP_URL}/register`}
-                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-white/5 text-white font-semibold rounded-full border border-white/10 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-emerald-500/50 active:scale-[0.98] touch-manipulation"
+                    className="group btn-secondary inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4"
                   >
                     <span>{t.hero.becomePro}</span>
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </a>
                 </div>
+
+                {/* Trust indicators */}
+                <div className={`mt-12 md:mt-16 flex flex-wrap justify-center gap-6 md:gap-10 transition-all duration-1000 delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {[1,2,3,4].map(i => (
+                        <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-300 to-primary-500 border-2 shadow-sm" style={{ borderColor: 'var(--color-bg-primary)' }} />
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">500+ {lang === 'ka' ? 'ოსტატი' : 'Pros'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map(i => (
+                        <svg key={i} className="w-4 h-4 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <span className="text-sm font-medium text-[var(--color-text-secondary)]">4.9 {lang === 'ka' ? 'რეიტინგი' : 'Rating'}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Scroll Indicator - Hidden on very small screens */}
-            <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 animate-bounce hidden sm:block">
-              <div className="w-5 h-8 md:w-6 md:h-10 border-2 border-white/20 rounded-full flex justify-center pt-1.5 md:pt-2">
-                <div className="w-1 h-2 md:w-1.5 md:h-3 bg-emerald-400 rounded-full animate-pulse" />
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 hidden sm:block">
+              <div className="flex flex-col items-center gap-2 text-[var(--color-text-muted)]">
+                <span className="text-xs font-medium uppercase tracking-wider">{lang === 'ka' ? 'გადაახვიე' : 'Scroll'}</span>
+                <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
               </div>
             </div>
           </section>
 
-          {/* Stats Section with Animated Counters */}
+          {/* Stats Section */}
           <StatsSection t={t} />
 
-          {/* Features Section - Mobile Optimized */}
-          <section className="py-16 md:py-24 relative">
-            <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-              <div className="text-center mb-10 md:mb-16">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white mb-3 md:mb-4">{t.features.title}</h2>
-                <p className="text-base md:text-lg text-gray-400 max-w-2xl mx-auto px-2">{t.features.subtitle}</p>
+          {/* Features Section */}
+          <section className="py-16 md:py-28 relative">
+            <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+              <div className="text-center mb-12 md:mb-20">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-[var(--color-text-primary)] mb-4">{t.features.title}</h2>
+                <p className="text-base md:text-lg max-w-xl mx-auto text-[var(--color-text-secondary)]">{t.features.subtitle}</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
                 <FeatureCard
                   icon={<ShieldIcon />}
                   title={t.features.secure.title}
                   description={t.features.secure.description}
+                  color="primary"
                   delay={0}
                 />
                 <FeatureCard
                   icon={<BadgeIcon />}
                   title={t.features.quality.title}
                   description={t.features.quality.description}
+                  color="forest"
                   delay={100}
                 />
                 <FeatureCard
                   icon={<BoltIcon />}
                   title={t.features.fast.title}
                   description={t.features.fast.description}
+                  color="primary"
                   delay={200}
                 />
                 <FeatureCard
                   icon={<ChatIcon />}
                   title={t.features.communication.title}
                   description={t.features.communication.description}
+                  color="forest"
                   delay={300}
                 />
               </div>
             </div>
           </section>
 
-          {/* CTA Section - Mobile Optimized */}
+          {/* CTA Section */}
           <section className="py-16 md:py-24 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-teal-600/20 to-emerald-600/20" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.15),transparent_70%)]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-forest-800 to-forest-900" />
+            <div className="absolute inset-0 grain opacity-10" />
 
-            <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 relative z-10">
-              <div className="max-w-3xl mx-auto text-center">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white mb-4 md:mb-6">{t.cta.title}</h2>
-                <p className="text-base md:text-lg text-gray-300 mb-8 md:mb-10 px-2">{t.cta.subtitle}</p>
+            {/* Decorative circles */}
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-primary-400/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-primary-400/5 rounded-full blur-2xl" />
 
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+            <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8 relative z-10">
+              <div className="max-w-2xl mx-auto text-center">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-white mb-4 md:mb-6">{t.cta.title}</h2>
+                <p className="text-base md:text-lg text-white/80 mb-8 md:mb-10">{t.cta.subtitle}</p>
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <a
                     href={`${APP_URL}/browse`}
-                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-white text-gray-900 font-semibold rounded-full transition-all duration-300 hover:shadow-xl hover:shadow-white/20 active:scale-[0.98] touch-manipulation"
+                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4 bg-primary-400 text-forest-900 font-semibold rounded-xl transition-all duration-300 hover:bg-primary-300 hover:shadow-glow hover:-translate-y-1 active:scale-[0.98] touch-manipulation"
                   >
                     <span>{t.hero.findPro}</span>
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </a>
                   <a
                     href={`${APP_URL}/register`}
-                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-transparent text-white font-semibold rounded-full border-2 border-white/30 transition-all duration-300 hover:bg-white/10 hover:border-white/50 active:scale-[0.98] touch-manipulation"
+                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4 bg-transparent text-white font-semibold rounded-xl border-2 border-white/30 transition-all duration-300 hover:bg-white/10 hover:border-white/50 hover:-translate-y-1 active:scale-[0.98] touch-manipulation"
                   >
                     <span>{t.hero.becomePro}</span>
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </a>
@@ -321,15 +701,15 @@ export default function App() {
           </section>
         </main>
 
-        {/* Footer - Mobile Optimized */}
-        <footer className="border-t border-white/5 py-6 md:py-8">
-          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
+        {/* Footer */}
+        <footer className="border-t py-8 md:py-10 transition-colors duration-300" style={{ backgroundColor: 'var(--color-bg-elevated)', borderColor: 'var(--color-border)' }}>
+          <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg md:text-xl font-display font-bold text-white">Homico</span>
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
+                <span className="text-lg font-serif font-semibold text-[var(--color-text-primary)]">Homico</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-primary-400"></span>
               </div>
-              <p className="text-gray-500 text-xs md:text-sm">&copy; 2024 Homico. {t.footer.rights}</p>
+              <p className="text-sm text-[var(--color-text-muted)]">&copy; 2024 Homico. {t.footer.rights}</p>
             </div>
           </div>
         </footer>
@@ -338,7 +718,7 @@ export default function App() {
   )
 }
 
-// Stats Section with animated counters - Mobile Optimized
+// Stats Section
 function StatsSection({ t }: { t: typeof translations.ka }) {
   const [inView, setInView] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -361,7 +741,7 @@ function StatsSection({ t }: { t: typeof translations.ka }) {
       const step = (timestamp: number) => {
         if (!startTime) startTime = timestamp
         const progress = Math.min((timestamp - startTime) / duration, 1)
-        const eased = 1 - Math.pow(1 - progress, 4) // easeOutQuart
+        const eased = 1 - Math.pow(1 - progress, 4)
         setCounts(prev => ({ ...prev, [key]: Math.floor(eased * end) }))
         if (progress < 1) requestAnimationFrame(step)
       }
@@ -375,33 +755,33 @@ function StatsSection({ t }: { t: typeof translations.ka }) {
   }, [inView])
 
   return (
-    <section ref={ref} className="py-12 md:py-20 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/5 to-transparent" />
-
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
-          <StatItem value={`${counts.pros}+`} label={t.stats.professionals} />
-          <StatItem value={`${counts.projects}+`} label={t.stats.projects} />
-          <StatItem value={`${(counts.rating / 10).toFixed(1)}/5`} label={t.stats.rating} />
-          <StatItem value={`${counts.satisfaction}%`} label={t.stats.satisfaction} />
+    <section ref={ref} className="py-16 md:py-24 relative">
+      <div className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+        <div className="card rounded-3xl p-8 md:p-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+            <StatItem value={`${counts.pros}+`} label={t.stats.professionals} />
+            <StatItem value={`${counts.projects}+`} label={t.stats.projects} />
+            <StatItem value={`${(counts.rating / 10).toFixed(1)}`} label={t.stats.rating} suffix="/5" />
+            <StatItem value={`${counts.satisfaction}`} label={t.stats.satisfaction} suffix="%" />
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-function StatItem({ value, label }: { value: string; label: string }) {
+function StatItem({ value, label, suffix = '' }: { value: string; label: string; suffix?: string }) {
   return (
-    <div className="text-center group">
-      <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-1 md:mb-2 group-hover:text-emerald-400 transition-colors duration-300">
-        {value}
+    <div className="text-center">
+      <div className="text-3xl sm:text-4xl md:text-5xl font-semibold text-primary-400 mb-2">
+        {value}<span className="text-[var(--color-text-muted)]">{suffix}</span>
       </div>
-      <div className="text-gray-400 text-sm md:text-base font-medium">{label}</div>
+      <div className="text-sm md:text-base font-medium text-[var(--color-text-secondary)]">{label}</div>
     </div>
   )
 }
 
-function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNode; title: string; description: string; delay: number }) {
+function FeatureCard({ icon, title, description, color, delay }: { icon: React.ReactNode; title: string; description: string; color: 'primary' | 'forest'; delay: number }) {
   const [isVisible, setIsVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -414,17 +794,23 @@ function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNod
     return () => observer.disconnect()
   }, [])
 
+  const bgColor = color === 'primary' ? 'var(--color-accent-soft)' : 'var(--color-forest-soft)'
+  const iconColor = color === 'primary' ? 'var(--color-accent)' : 'var(--color-forest)'
+
   return (
     <div
       ref={ref}
-      className={`group bg-white/5 backdrop-blur-sm rounded-2xl p-6 md:p-8 border border-white/10 hover:border-emerald-500/50 transition-all duration-500 hover:bg-white/10 active:scale-[0.98] touch-manipulation ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+      className={`group card rounded-2xl p-6 md:p-8 transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center mb-4 md:mb-6 group-hover:scale-110 transition-transform duration-300">
-        <div className="text-emerald-400">{icon}</div>
+      <div
+        className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300"
+        style={{ backgroundColor: bgColor }}
+      >
+        <div style={{ color: iconColor }}>{icon}</div>
       </div>
-      <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-white group-hover:text-emerald-400 transition-colors duration-300">{title}</h3>
-      <p className="text-gray-400 text-sm md:text-base leading-relaxed">{description}</p>
+      <h3 className="text-lg md:text-xl font-semibold mb-2 text-[var(--color-text-primary)]">{title}</h3>
+      <p className="text-sm md:text-base leading-relaxed text-[var(--color-text-secondary)]">{description}</p>
     </div>
   )
 }
