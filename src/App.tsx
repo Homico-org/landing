@@ -5,6 +5,12 @@ import { Helmet } from 'react-helmet-async'
 const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
+// Helper to get cookie value
+function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return match ? match[2] : null
+}
+
 // Hook to check if user is authenticated and redirect to app
 function useAuthRedirect() {
   const [isChecking, setIsChecking] = useState(true)
@@ -12,10 +18,24 @@ function useAuthRedirect() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('access_token')
+        // Check for token in localStorage (same origin) or cookies (cross-subdomain)
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token') || getCookie('auth_token')
+        const userRole = getCookie('user_role')
 
         if (!token) {
           setIsChecking(false)
+          return
+        }
+
+        // If we have role from cookie, redirect immediately without API call
+        if (userRole) {
+          if (userRole === 'company') {
+            window.location.href = `${APP_URL}/company/jobs`
+          } else if (userRole === 'admin') {
+            window.location.href = `${APP_URL}/admin`
+          } else {
+            window.location.href = `${APP_URL}/browse`
+          }
           return
         }
 
@@ -28,8 +48,15 @@ function useAuthRedirect() {
         })
 
         if (response.ok) {
-          // User is authenticated, redirect to app
-          window.location.href = `${APP_URL}/browse`
+          const userData = await response.json()
+          // User is authenticated, redirect based on role
+          if (userData.role === 'company') {
+            window.location.href = `${APP_URL}/company/jobs`
+          } else if (userData.role === 'admin') {
+            window.location.href = `${APP_URL}/admin`
+          } else {
+            window.location.href = `${APP_URL}/browse`
+          }
           return
         }
 
@@ -516,18 +543,31 @@ export default function App() {
             </a>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2">
               <a
                 href={`${APP_URL}/login`}
-                className="px-5 py-2.5 font-medium transition-colors duration-200 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+                className="group relative inline-flex items-center gap-2 px-5 py-2.5 font-medium transition-all duration-300 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-xl hover:bg-[var(--color-bg-elevated)]"
               >
-                {t.nav.login}
+                {/* Key/Unlock Icon */}
+                <svg className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.74 5.74L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.59a1 1 0 0 1 .29-.7l5.97-5.97A6 6 0 0 1 15 3a6 6 0 0 1 6 6z" />
+                </svg>
+                <span>{t.nav.login}</span>
               </a>
               <a
                 href={`${APP_URL}/register`}
-                className="btn-primary px-6 py-2.5 rounded-xl"
+                className="group relative inline-flex items-center gap-2 btn-primary px-6 py-2.5 rounded-xl overflow-hidden"
               >
-                {t.nav.register}
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                {/* Rocket/Start Icon */}
+                <svg className="w-4 h-4 relative z-10 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                </svg>
+                <span className="relative z-10">{t.nav.register}</span>
               </a>
             </div>
 
@@ -581,16 +621,29 @@ export default function App() {
                   <a
                     href={`${APP_URL}/register`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="btn-primary w-full py-3.5 text-center text-base"
+                    className="group relative btn-primary w-full py-3.5 text-center text-base inline-flex items-center justify-center gap-2.5 overflow-hidden"
                   >
-                    {t.nav.register}
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    {/* Rocket Icon */}
+                    <svg className="w-5 h-5 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                      <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                      <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                      <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                    </svg>
+                    <span className="relative z-10">{t.nav.register}</span>
                   </a>
                   <a
                     href={`${APP_URL}/login`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="btn-secondary w-full py-3.5 text-center text-base"
+                    className="group btn-secondary w-full py-3.5 text-center text-base inline-flex items-center justify-center gap-2.5"
                   >
-                    {t.nav.login}
+                    {/* Key Icon */}
+                    <svg className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.74 5.74L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.59a1 1 0 0 1 .29-.7l5.97-5.97A6 6 0 0 1 15 3a6 6 0 0 1 6 6z" />
+                    </svg>
+                    <span>{t.nav.login}</span>
                   </a>
                 </div>
               </div>
@@ -610,9 +663,9 @@ export default function App() {
                 </div>
 
                 {/* Title */}
-                <h1 className={`text-[2.75rem] leading-[1.1] sm:text-5xl md:text-6xl lg:text-7xl font-semibold mb-6 md:mb-8 tracking-tight transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                <h1 className={`text-[1.65rem] leading-[1.25] xs:text-[2rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold mb-6 md:mb-8 tracking-tight transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                   <span className="block text-[var(--color-text-primary)]">{t.hero.title}</span>
-                  <span className="block mt-1 md:mt-2 gradient-text">
+                  <span className="block mt-1 md:mt-2 gradient-text whitespace-nowrap">
                     {t.hero.titleHighlight}
                   </span>
                 </h1>
@@ -624,21 +677,37 @@ export default function App() {
                 {/* CTA Buttons */}
                 <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center transition-all duration-1000 delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
                   <a
-                    href={`${APP_URL}/browse`}
-                    className="group btn-primary inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4"
+                    href={`${APP_URL}/login`}
+                    className="group btn-primary relative inline-flex items-center justify-center gap-3 px-8 py-4 overflow-hidden"
                   >
-                    <span>{t.hero.findPro}</span>
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    {/* Shimmer effect on hover */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    {/* Search/Magnifier Icon */}
+                    <svg className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <span className="relative z-10 font-semibold">{t.hero.findPro}</span>
+                    <svg className="w-4 h-4 relative z-10 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </a>
                   <a
-                    href={`${APP_URL}/register`}
-                    className="group btn-secondary inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4"
+                    href={`${APP_URL}/register?type=pro`}
+                    className="group btn-secondary relative inline-flex items-center justify-center gap-3 px-8 py-4 overflow-hidden"
                   >
-                    <span>{t.hero.becomePro}</span>
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    {/* Subtle glow on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-primary-400/5 via-primary-400/10 to-primary-400/5" />
+                    {/* Briefcase/Pro Icon */}
+                    <svg className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" />
+                      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                      <path d="M12 12v.01" />
+                      <path d="M2 12h20" />
+                    </svg>
+                    <span className="relative z-10 font-semibold">{t.hero.becomePro}</span>
+                    <svg className="w-4 h-4 relative z-10 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </a>
                 </div>
@@ -738,21 +807,37 @@ export default function App() {
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                   <a
-                    href={`${APP_URL}/browse`}
-                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4 bg-primary-400 text-forest-900 font-semibold rounded-xl transition-all duration-300 hover:bg-primary-300 hover:shadow-glow hover:-translate-y-1 active:scale-[0.98] touch-manipulation"
+                    href={`${APP_URL}/login`}
+                    className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary-400 text-forest-900 font-semibold rounded-xl transition-all duration-300 hover:bg-primary-300 hover:shadow-glow hover:-translate-y-1 active:scale-[0.98] touch-manipulation overflow-hidden"
                   >
-                    <span>{t.hero.findPro}</span>
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    {/* Shimmer */}
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                    {/* Search Icon */}
+                    <svg className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <span className="relative z-10">{t.hero.findPro}</span>
+                    <svg className="w-4 h-4 relative z-10 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </a>
                   <a
-                    href={`${APP_URL}/register`}
-                    className="group inline-flex items-center justify-center gap-2 sm:gap-3 px-7 sm:px-8 py-4 bg-transparent text-white font-semibold rounded-xl border-2 border-white/30 transition-all duration-300 hover:bg-white/10 hover:border-white/50 hover:-translate-y-1 active:scale-[0.98] touch-manipulation"
+                    href={`${APP_URL}/register?type=pro`}
+                    className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-transparent text-white font-semibold rounded-xl border-2 border-white/30 transition-all duration-300 hover:bg-white/10 hover:border-white/50 hover:-translate-y-1 active:scale-[0.98] touch-manipulation overflow-hidden"
                   >
-                    <span>{t.hero.becomePro}</span>
-                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-white/5 via-white/10 to-white/5" />
+                    {/* Briefcase Icon */}
+                    <svg className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="7" width="20" height="14" rx="2" />
+                      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                      <path d="M12 12v.01" />
+                      <path d="M2 12h20" />
+                    </svg>
+                    <span className="relative z-10">{t.hero.becomePro}</span>
+                    <svg className="w-4 h-4 relative z-10 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </a>
                 </div>

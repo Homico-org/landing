@@ -6,7 +6,13 @@
       "Bash(npm run build:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(curl:*)",
+      "Bash(mongosh:*)",
+      "Bash(/opt/homebrew/bin/mongosh:*)"
     ],
     "deny": [],
     "ask": []
