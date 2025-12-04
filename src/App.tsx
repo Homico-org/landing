@@ -3,6 +3,52 @@ import { Helmet } from 'react-helmet-async'
 
 // Configuration - Use environment variable or fallback to current origin for local development
 const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+// Hook to check if user is authenticated and redirect to app
+function useAuthRedirect() {
+  const [isChecking, setIsChecking] = useState(true)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem('access_token')
+
+        if (!token) {
+          setIsChecking(false)
+          return
+        }
+
+        // Validate token with backend
+        const response = await fetch(`${API_URL}/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (response.ok) {
+          // User is authenticated, redirect to app
+          window.location.href = `${APP_URL}/browse`
+          return
+        }
+
+        // Token is invalid, clear it
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+      } catch {
+        // Error checking auth, continue showing landing page
+      }
+
+      setIsChecking(false)
+    }
+
+    checkAuth()
+  }, [])
+
+  return { isChecking }
+}
 
 // Home/Renovation themed SVG Icons
 const HouseIcon = ({ size = 48 }: { size?: number }) => (
@@ -394,15 +440,20 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = translations[lang]
 
+  // Check if user is already authenticated and redirect to app
+  const { isChecking } = useAuthRedirect()
+
   // Set dark mode by default
   useEffect(() => {
     document.documentElement.classList.add('dark')
   }, [])
 
   useEffect(() => {
-    setIsLoaded(true)
+    if (!isChecking) {
+      setIsLoaded(true)
+    }
     document.documentElement.lang = lang
-  }, [lang])
+  }, [lang, isChecking])
 
   useEffect(() => {
     const handleResize = () => {
@@ -420,6 +471,15 @@ export default function App() {
     }
     return () => { document.body.style.overflow = '' }
   }, [mobileMenuOpen])
+
+  // Show loading state while checking auth
+  if (isChecking) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <>
