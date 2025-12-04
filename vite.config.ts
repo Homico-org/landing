@@ -12,4 +12,12 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    allowedHosts: [
+      'homico-landing.onrender.com',
+      'homico.ge',
+      'www.homico.ge',
+      'localhost',
+    ],
+  },
 })
