@@ -465,15 +465,31 @@ export default function App() {
   const [lang] = useState<Lang>('ka')
   const [isLoaded, setIsLoaded] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    // Check localStorage first, then system preference, default to light
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('landing-theme')
+      if (saved) return saved === 'dark'
+      return window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    return false
+  })
   const t = translations[lang]
 
   // Check if user is already authenticated and redirect to app
   const { isChecking } = useAuthRedirect()
 
-  // Set dark mode by default
+  // Apply theme class
   useEffect(() => {
-    document.documentElement.classList.add('dark')
-  }, [])
+    if (isDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    localStorage.setItem('landing-theme', isDark ? 'dark' : 'light')
+  }, [isDark])
+
+  const toggleTheme = () => setIsDark(prev => !prev)
 
   useEffect(() => {
     if (!isChecking) {
@@ -544,6 +560,42 @@ export default function App() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-2">
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 hover:bg-[var(--color-bg-elevated)]"
+                style={{ border: '1px solid var(--color-border-subtle)' }}
+                aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {/* Sun Icon */}
+                <svg
+                  className={`w-5 h-5 absolute transition-all duration-300 ${isDark ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'}`}
+                  style={{ color: 'var(--color-text-secondary)' }}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="4" />
+                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                </svg>
+                {/* Moon Icon */}
+                <svg
+                  className={`w-5 h-5 absolute transition-all duration-300 ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-0'}`}
+                  style={{ color: 'var(--color-text-secondary)' }}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                </svg>
+              </button>
+
               <a
                 href={`${APP_URL}/login`}
                 className="group relative inline-flex items-center gap-2 px-5 py-2.5 font-medium transition-all duration-300 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-xl hover:bg-[var(--color-bg-elevated)]"
@@ -616,6 +668,38 @@ export default function App() {
                   boxShadow: 'var(--shadow-lg)'
                 }}
               >
+                {/* Theme Toggle for Mobile */}
+                <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
+                  <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                    {isDark ? 'Dark Mode' : 'Light Mode'}
+                  </span>
+                  <button
+                    onClick={toggleTheme}
+                    className="relative w-14 h-8 rounded-full transition-all duration-300"
+                    style={{
+                      backgroundColor: isDark ? 'var(--color-accent)' : 'var(--color-bg-muted)',
+                      border: '1px solid var(--color-border)'
+                    }}
+                    aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  >
+                    <div
+                      className={`absolute top-1 w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center ${isDark ? 'left-7' : 'left-1'}`}
+                      style={{ backgroundColor: 'var(--color-bg-elevated)', boxShadow: 'var(--shadow-sm)' }}
+                    >
+                      {isDark ? (
+                        <svg className="w-3.5 h-3.5" style={{ color: 'var(--color-accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3.5 h-3.5" style={{ color: 'var(--color-text-tertiary)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="4" />
+                          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                </div>
+
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3">
                   <a
@@ -663,9 +747,11 @@ export default function App() {
                 </div>
 
                 {/* Title */}
-                <h1 className={`text-[1.5rem] leading-[1.25] xs:text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold mb-6 md:mb-8 tracking-tight transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                  <span className="block text-[var(--color-text-primary)]">{t.hero.title}</span>
-                  <span className="block mt-1 md:mt-2 gradient-text text-[1.25rem] xs:text-[1.5rem] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+                <h1 className={`md:mb-16 transition-all duration-1000 delay-100 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                  <span className="block text-[var(--color-text-primary)] text-[2rem] sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.1]">
+                    {t.hero.title}
+                  </span>
+                  <span className="block mb:h-[100px] h-[70px] mt-2 md:mt-3 hero-highlight-text text-[1.75rem] sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.15]">
                     {t.hero.titleHighlight}
                   </span>
                 </h1>
